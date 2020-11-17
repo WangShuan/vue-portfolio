@@ -1,0 +1,48 @@
+@import "~bootstrap/scss/functions";
+@import "./helpers/_var";
+@import "~bootstrap/scss/bootstrap";
+@import "./_dashboard";
+@import "./helpers/_loading";
+
+.table th,
+.table td {
+  vertical-align: inherit;
+}
+
+.myhover {
+  &:hover {
+    background-color: $light;
+    color: $dark;
+    cursor: pointer;
+
+    &>span {
+      background-color: $dark !important;
+      color: $light !important;
+    }
+  }
+
+  &.active {
+    &>span {
+      background-color: $light;
+      color: $secondary;
+    }
+  }
+}
+
+.mobile {
+  display: none;
+}
+
+@media screen and (max-width: 420px) {
+  .pc {
+    display: none;
+  }
+
+  .mobile {
+    display: block;
+  }
+
+  .mt {
+    margin-top: unset !important;
+  }
+}
