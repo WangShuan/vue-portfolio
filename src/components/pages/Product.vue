@@ -228,15 +228,9 @@ export default {
       }
     },
   },
-  // watch: {
-  //   $route: function (to, from) {
-  //     this.getProduct(this.$route.params.id);
-  //   },
-  // },
   created() {
     const vm = this;
     const api = `${process.env.APIPATH}api/${process.env.MYPATH}/products/all`;
-
     this.$http.get(api).then((res) => {
       if (res.data.success) {
         let arr = res.data.products;

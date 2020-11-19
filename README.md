@@ -32,23 +32,23 @@
 
 主要用到的檔案都在 `src` 這個資料夾中
 
-* `src/main.js` 是入口文件 裡面處理各種插件的配置
+  * `src/main.js` 是入口文件 裡面處理各種插件的配置
 
-* `src/router/index.js` 專門處理所有路由元件的檔案
+  * `src/router/index.js` 專門處理所有路由元件的檔案
 
-* `src/App.vue` 是整個 vue 實例(下方 style 標籤中則放整個實例需用到的所有樣式 all.scss)
+  * `src/App.vue` 是整個 vue 實例(下方 style 標籤中則放整個實例需用到的所有樣式 all.scss)
 
-* `src/assets` 資料夾存放需要用到的 js css img 等檔案
+  * `src/assets` 資料夾存放需要用到的 js css img 等檔案
 
-* `src/components` 資料夾存放頁面與元件的 .vue 檔 裡面通常可按需要新增資料夾 如： pages 資料夾用作存放作為頁面的 .vue 檔
+  * `src/components` 資料夾存放頁面與元件的 .vue 檔 裡面通常可按需要新增資料夾 如： pages 資料夾用作存放作為頁面的 .vue 檔
 
 如果要處理環境變數或 `npm run build` 生成後的引用路徑則在 `config` 資料夾中
 
-* `dev.env.js` 即 `npm run dev` 使用的環境變數
+  * `dev.env.js` 即 `npm run dev` 使用的環境變數
 
-* `prod.env.js` 即 `npm run build` 使用的環境變數
+  * `prod.env.js` 即 `npm run build` 使用的環境變數
 
-* `index.js` 中的 `assetsPublicPath: '/'` 就是專門用來改變 `dist` 資料夾中 `index.html` 的引用路徑
+  * `index.js` 中的 `assetsPublicPath: '/'` 就是專門用來改變 `dist` 資料夾中 `index.html` 的引用路徑
 
 ## 一些比較重要的代碼詳解
 
@@ -164,3 +164,91 @@ export default new Router({
 </style>
 
 ```
+
+### 6. cookie 相關
+
+該專案使用 cookie 保存了喜好項目與後台的登入狀態
+
+主要代碼分別在 `Login.vue` `Dashboard.vue` `Like.vue`
+
+* 登入的部分
+
+  在 `Login.vue` 中保存了登入的 `token` 主要代碼如下：
+
+  ```js
+
+  this.$http.post(api, vm.user).then((res) => {
+    if (res.data.success) {
+      const token = res.data.token;
+      const expired = res.data.expired;
+      document.cookie = `hexToken=${token}; expires=${new Date(expired)};`;
+    }
+  })
+
+  ```
+
+  接下來在 `Dashboard.vue` 中將登入成功後取得的 token 設定於每次 request 中的 header 參數
+
+  如下：
+
+  ```js
+
+  created() {
+    // 在登入時我們將 cookie 存到 hexToken 中，這裏就是獲取 hexToken 的值
+    const myCookie = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1");
+    // 這句是主要代碼 將 hexToken 的值 設定到 axios 的請求頭中
+    this.$http.defaults.headers.common.Authorization = myCookie;
+  },
+
+  ```
+
+* 喜好項目
+
+在 `Product.vue` 中直接判斷 cookie 裡面是否含有產品的 id 如果有代表該產品是喜好項目
+
+在 `Like.vue` 中把所有 cookie 分成鍵對值然後判斷是否有 `like` 這個鍵 再獲取它對應的值從而取得所有喜好項目的產品 id
+
+取得後再將所有 id 渲染成一個個的產品顯示於喜好項目列表中
+
+主要代碼如下：
+
+```js
+
+let cookieObj = {};
+let cookieAry = document.cookie.split(";");
+let cookie;
+let arr;
+for (var i = 0, l = cookieAry.length; i < l; ++i) {
+  cookie = cookieAry[i].trim();
+  cookie = cookie.split("=");
+  // cookie[0] => key ; cookie[1] => value
+  if (cookie[0] === "like") {
+    arr = cookie[1];
+    // 如果有人添加過喜好項目又清空的話 arr 就會是空字符串
+    // 所以這裡要判斷它的長度大於零確定 cookie 中有產品 id 
+    if (arr.length !== 0) {
+      // 這裡就是渲染喜好項目的 methods
+      vm.getLikes(arr);
+    }
+  }
+}
+
+```
+
+### 7. event Bus 使用
+
+主要代碼在 `messageAlert.vue` 中 我將該專案中通過 event bus 建立提示訊息的同時生成購物車的數量
+
+如下：
+
+```js
+
+vm.$bus.$on("message:push", (message, status = "warning") => {
+  // 獲取購物車數量
+  vm.getCart();
+  // 生成互動訊息提示窗
+  vm.updateMessage(message, status);
+});
+
+```
+
