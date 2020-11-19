@@ -10,8 +10,8 @@
     <div v-if="hasLiked == false">
       <h4 class="my-5 pc">
         您的喜好項目為空，
-        <br />可以到
-        <a href="/" class="text-danger m-1">商品列表</a>選取您喜歡的商品加入喜好項目。
+        <br />請
+        <router-link to="/products/all" class="text-danger mr-1">回商品列表</router-link>添加喜好項目。
       </h4>
     </div>
 
